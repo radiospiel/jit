@@ -1,0 +1,90 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "JIT" "1" "January 2014" "" ""
+.
+.SH "NAME"
+\fBjit\fR \- compile source files as needed
+.
+.SH "SYNOPSIS"
+jit translates a script into a binary on the first run of the script\. This allows for easier deployment of binary, native code \- assuming the code itself is OS independant (using \fB#ifdef\fR conditionals or similar mechanisms)
+.
+.SH "DESCRIPTION"
+\fBjit\fR translates a script into a binary when the script is run for the first time\. jit itself is independent from the language of the script by different "strategies"\. Current strategies include:
+.
+.IP "\(bu" 4
+\fBcc\fR: to compile a C source file using cc(1)
+.
+.IP "\(bu" 4
+\fBflex\fR: to compile a file via flex(1) and cc(1)
+.
+.IP "" 0
+.
+.P
+jit assumes the tools needed by a specific strategy are installed on the base system\.
+.
+.P
+Usually \fBjit\fR would be embedded in the target script\. This is the hello world example (also in example/hello):
+.
+.IP "" 4
+.
+.nf
+
+#!/usr/bin/env jit cc
+
+#include <stdio\.h>
+
+int main() {
+  printf("Hello world\en");
+  return 0;
+}
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Make sure jit is installed and in your $PATH and set this script executable (\fBchmod o+x example/hello\fR)\. Now you can run this script directly\. On the first invocation \fBjit\fR produces a binary; on subsequent invocations the already produced binary will be run again\.
+.
+.IP "" 4
+.
+.nf
+
+\&\./example/hello
+cc\'ing \./example/hello into /Users/eno/\.jit//projects/native/jit/example/hello
+Hello world
+.
+.fi
+.
+.IP "" 0
+.
+.P
+\fBNote:\fR jit\'s output (\fIcc\'ing \./example/hello \.\.\fR) is written to stderr to not mingle with anything print from the script itself\.
+.
+.SH "CLEARING jitted BINARIES"
+To clear a binary which was jitted from a specific sourcefile run:
+.
+.IP "" 4
+.
+.nf
+
+`jit` clear sourcefile<br>
+.
+.fi
+.
+.IP "" 0
+.
+.SH "INSTALLATION"
+Download the jit script from github and put it somewhere in your path\.
+.
+.SH "FILES"
+jitted binaries are stored below \fB$HOME/\.jit\fR\.
+.
+.SH "LIMITATIONS"
+Each jitted application must be implemented in a single source file\.
+.
+.SH "COPYRIGHT"
+\fBjit\fR is Copyright (C) 2013,1024 @radiospiel \fIhttps://github\.com/radiospiel\fR
+.
+.SH "SEE ALSO"
+cc(1), flex(1)\.
