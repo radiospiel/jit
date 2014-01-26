@@ -1,0 +1,70 @@
+#!/bin/sh
+
+usage() {
+  cat <<-USAGE
+jit translates a script into a binary when the script is first run.
+
+Usage: jit <strategy> <source> args ..."
+
+Usually embedded into scripts via '!#/usr/bin/env jit <strategy>'
+
+Supported strategies are:
+- cc: simple compilation via cc(1)
+- flex: simple compilation via flex(1) and cc(1)
+USAGE
+
+exit 127
+}
+
+die() {
+  echo "$@" >&2
+  exit 127
+}
+
+STRATEGY=$1; shift
+SOURCE=$1; shift
+
+[ "${SOURCE}" ] || usage
+
+FULL_SOURCE=$(cd "$(dirname "${SOURCE}")" && pwd)/$(basename "${SOURCE}")
+
+REL_SOURCE=${FULL_SOURCE#$HOME}
+BINARY=~/.jit/$REL_SOURCE
+
+if [ ${STRATEGY} = "clear" ] ; then
+  if [ -e ${BINARY} ] ; then
+    rm ${BINARY}
+    echo "Removed ${BINARY}" >&2
+  fi
+  exit 0
+fi
+  
+if [ ${SOURCE} -nt ${BINARY} ] ; then
+
+echo "${STRATEGY}'ing ${SOURCE} into ${BINARY}" >&2
+mkdir -p -m 0777 $(dirname ${BINARY})
+
+case "${STRATEGY}" in
+  cc)
+    sed '1 s/^.*$//' ${SOURCE} > ${BINARY}.c &&
+    cc -o ${BINARY} ${BINARY}.c -O2
+    ;;
+  flex)
+    sed '1 s/^.*$//' ${SOURCE} > ${BINARY}.fl &&
+    flex -o ${BINARY}.c ${BINARY}.fl &&
+    cc -o ${BINARY} ${BINARY}.c -O2 -lfl
+    ;;
+  *)
+    echo "Unknown jit strategy \"${STRATEGY}\"" >&2
+    usage
+    ;;
+esac
+
+[ $? == "0" ] || die "Cannot build ${BINARY}"
+
+# set timestamp of binary to timestamp of source file
+touch -r ${SOURCE} ${BINARY}
+
+fi
+
+exec -a ${SOURCE} ${BINARY} "$@"
