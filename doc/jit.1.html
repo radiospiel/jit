@@ -79,7 +79,7 @@
 
 <p>jit translates a script into a binary on the first run of the script. This allows
 for easier deployment of binary, native code - assuming the code itself is
-OS independant (using <code>#ifdef</code> conditionals or similar mechanisms)</p>
+OS independent (using <code>#ifdef</code> conditionals or similar mechanisms, where needed.)</p>
 
 <h2 id="DESCRIPTION">DESCRIPTION</h2>
 
@@ -93,7 +93,8 @@ Current strategies include:</p>
 </ul>
 
 
-<p>jit assumes the tools needed by a specific strategy are installed on the base system.</p>
+<p>jit assumes the tools needed by a specific strategy - for example <span class="man-ref">flex<span class="s">(1)</span></span> and
+<span class="man-ref">cc<span class="s">(1)</span></span> - are installed on the target system.</p>
 
 <p>Usually <strong>jit</strong> would be embedded in the target script. This is the hello world
 example (also in example/hello):</p>
@@ -109,7 +110,7 @@ int main() {
 </code></pre>
 
 <p>Make sure jit is installed and in your $PATH and set this script executable
-(<code>chmod o+x example/hello</code>). Now you can run this script directly. On the first
+(<code>chmod a+x example/hello</code>). Now you can run this script directly. On the first
 invocation <strong>jit</strong> produces a binary; on subsequent invocations the already
 produced binary will be run again.</p>
 
@@ -119,18 +120,25 @@ Hello world
 </code></pre>
 
 <p><strong>Note:</strong> jit's output (<em>cc'ing ./example/hello ..</em>) is written to stderr to
-not mingle with anything print from the script itself.</p>
+not mingle with anything printed from the script itself.</p>
 
 <h2 id="CLEARING-jitted-BINARIES">CLEARING jitted BINARIES</h2>
 
-<p>To clear a binary which was jitted from a specific sourcefile run:</p>
+<p>It should not be necessary to manually clear a jitted binary. <code>jit</code> detects
+a new version of a source script automatically and rebuilds the binary as
+needed.</p>
 
-<pre><code>`jit` clear sourcefile&lt;br&gt;
-</code></pre>
+<p>If you still feel the need to remove a binary just look for it in <code>$HOME/.jit</code>
+and remove it.</p>
 
 <h2 id="INSTALLATION">INSTALLATION</h2>
 
-<p>Download the jit script from github and put it somewhere in your path.</p>
+<p>Download the jit script from github and put it somewhere in your path.
+The following commands, for example, would install <code>jit</code> into <code>/usr/local/bin</code>:</p>
+
+<pre><code>sudo curl https://raw.github.com/radiospiel/jit/master/bin/jit &gt; /usr/local/bin/jit
+sudo chmod a+x /usr/local/bin/jit
+</code></pre>
 
 <h2 id="FILES">FILES</h2>
 

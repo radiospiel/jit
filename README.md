@@ -5,7 +5,7 @@ jit(1) -- compile source files as needed
 
 jit translates a script into a binary on the first run of the script. This allows
 for easier deployment of binary, native code - assuming the code itself is
-OS independant (using `#ifdef` conditionals or similar mechanisms)
+OS independent (using `#ifdef` conditionals or similar mechanisms, where needed.)
 
 ## DESCRIPTION
 
@@ -16,7 +16,8 @@ Current strategies include:
 - **cc**: to compile a C source file using cc(1)
 - **flex**: to compile a file via flex(1) and cc(1)
 
-jit assumes the tools needed by a specific strategy are installed on the base system.
+jit assumes the tools needed by a specific strategy - for example flex(1) and 
+cc(1) - are installed on the target system.
 
 Usually **jit** would be embedded in the target script. This is the hello world
 example (also in example/hello):
@@ -31,7 +32,7 @@ example (also in example/hello):
     }
 
 Make sure jit is installed and in your $PATH and set this script executable 
-(`chmod o+x example/hello`). Now you can run this script directly. On the first 
+(`chmod a+x example/hello`). Now you can run this script directly. On the first 
 invocation **jit** produces a binary; on subsequent invocations the already 
 produced binary will be run again.
 
@@ -40,17 +41,24 @@ produced binary will be run again.
     Hello world
 
 **Note:** jit's output (*cc'ing ./example/hello ..*) is written to stderr to 
-not mingle with anything print from the script itself.
+not mingle with anything printed from the script itself.
 
 ## CLEARING jitted BINARIES
 
-To clear a binary which was jitted from a specific sourcefile run: 
+It should not be necessary to manually clear a jitted binary. `jit` detects
+a new version of a source script automatically and rebuilds the binary as 
+needed. 
 
-    `jit` clear sourcefile<br>
+If you still feel the need to remove a binary just look for it in `$HOME/.jit`
+and remove it.
 
 ## INSTALLATION
 
-Download the jit script from github and put it somewhere in your path.
+Download the jit script from github and put it somewhere in your path. 
+The following commands, for example, would install `jit` into `/usr/local/bin`:
+
+    sudo curl https://raw.github.com/radiospiel/jit/master/bin/jit > /usr/local/bin/jit
+    sudo chmod a+x /usr/local/bin/jit
 
 ## FILES
 

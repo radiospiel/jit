@@ -7,7 +7,7 @@
 \fBjit\fR \- compile source files as needed
 .
 .SH "SYNOPSIS"
-jit translates a script into a binary on the first run of the script\. This allows for easier deployment of binary, native code \- assuming the code itself is OS independant (using \fB#ifdef\fR conditionals or similar mechanisms)
+jit translates a script into a binary on the first run of the script\. This allows for easier deployment of binary, native code \- assuming the code itself is OS independent (using \fB#ifdef\fR conditionals or similar mechanisms, where needed\.)
 .
 .SH "DESCRIPTION"
 \fBjit\fR translates a script into a binary when the script is run for the first time\. jit itself is independent from the language of the script by different "strategies"\. Current strategies include:
@@ -21,7 +21,7 @@ jit translates a script into a binary on the first run of the script\. This allo
 .IP "" 0
 .
 .P
-jit assumes the tools needed by a specific strategy are installed on the base system\.
+jit assumes the tools needed by a specific strategy \- for example flex(1) and cc(1) \- are installed on the target system\.
 .
 .P
 Usually \fBjit\fR would be embedded in the target script\. This is the hello world example (also in example/hello):
@@ -44,7 +44,7 @@ int main() {
 .IP "" 0
 .
 .P
-Make sure jit is installed and in your $PATH and set this script executable (\fBchmod o+x example/hello\fR)\. Now you can run this script directly\. On the first invocation \fBjit\fR produces a binary; on subsequent invocations the already produced binary will be run again\.
+Make sure jit is installed and in your $PATH and set this script executable (\fBchmod a+x example/hello\fR)\. Now you can run this script directly\. On the first invocation \fBjit\fR produces a binary; on subsequent invocations the already produced binary will be run again\.
 .
 .IP "" 4
 .
@@ -59,23 +59,27 @@ Hello world
 .IP "" 0
 .
 .P
-\fBNote:\fR jit\'s output (\fIcc\'ing \./example/hello \.\.\fR) is written to stderr to not mingle with anything print from the script itself\.
+\fBNote:\fR jit\'s output (\fIcc\'ing \./example/hello \.\.\fR) is written to stderr to not mingle with anything printed from the script itself\.
 .
 .SH "CLEARING jitted BINARIES"
-To clear a binary which was jitted from a specific sourcefile run:
+It should not be necessary to manually clear a jitted binary\. \fBjit\fR detects a new version of a source script automatically and rebuilds the binary as needed\.
+.
+.P
+If you still feel the need to remove a binary just look for it in \fB$HOME/\.jit\fR and remove it\.
+.
+.SH "INSTALLATION"
+Download the jit script from github and put it somewhere in your path\. The following commands, for example, would install \fBjit\fR into \fB/usr/local/bin\fR:
 .
 .IP "" 4
 .
 .nf
 
-`jit` clear sourcefile<br>
+sudo curl https://raw\.github\.com/radiospiel/jit/master/bin/jit > /usr/local/bin/jit
+sudo chmod a+x /usr/local/bin/jit
 .
 .fi
 .
 .IP "" 0
-.
-.SH "INSTALLATION"
-Download the jit script from github and put it somewhere in your path\.
 .
 .SH "FILES"
 jitted binaries are stored below \fB$HOME/\.jit\fR\.
