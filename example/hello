@@ -1,4 +1,4 @@
-#!/usr/bin/env jit cc
+#!/usr/bin/env jit cc --
 
 #include <stdio.h>
 

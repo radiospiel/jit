@@ -4,9 +4,10 @@ usage() {
   cat <<-USAGE
 jit translates a script into a binary when the script is first run.
 
-Usage: jit <strategy> <source> args ..."
+Usage: jit <strategy> [ option .. ] -- <source> args ..."
 
-Usually embedded into scripts via '!#/usr/bin/env jit <strategy>'
+Usually embedded into scripts via '!#/usr/bin/env jit <strategy> [ <option> .. ] --'.
+Note: the trailing '--' MUST BE PRESENT in the shebang line!
 
 Supported strategies are:
 - cc: simple compilation via cc(1)
@@ -21,7 +22,31 @@ die() {
   exit 127
 }
 
+# A shebang line of
+#
+#   #!/usr/bin/env jit cc -lnatpmp --
+#
+# combined with a script invocation of 
+#
+#   script a b c
+#
+# translates into these arguments
+#
+#   cc -lnatpmp -- ./natpmpc.c a b c
+#
+#
 STRATEGY=$1; shift
+
+while [ "$1" ] && [ "$1" != "--" ]; do
+  STRATEGY_OPTIONS="$STRATEGY_OPTIONS $1"
+  shift
+done
+
+if [ "$1" != "--" ]; then
+  die "Invalid jit line. A jit line MUST include the '--' separator as the last jit argument."
+fi
+shift
+
 SOURCE=$1; shift
 
 [ "${SOURCE}" ] || usage
@@ -47,12 +72,12 @@ mkdir -p -m 0777 $(dirname ${BINARY})
 case "${STRATEGY}" in
   cc)
     sed '1 s/^.*$//' ${SOURCE} > ${BINARY}.c &&
-    cc -o ${BINARY} ${BINARY}.c -O2
+    cc -o ${BINARY} ${BINARY}.c -O2 ${STRATEGY_OPTIONS}
     ;;
   flex)
     sed '1 s/^.*$//' ${SOURCE} > ${BINARY}.fl &&
     flex -o ${BINARY}.c ${BINARY}.fl &&
-    cc -o ${BINARY} ${BINARY}.c -O2 -lfl
+    cc -o ${BINARY} ${BINARY}.c -O2 ${STRATEGY_OPTIONS} -lfl
     ;;
   *)
     echo "Unknown jit strategy \"${STRATEGY}\"" >&2
