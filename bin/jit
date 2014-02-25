@@ -44,7 +44,7 @@ while [ "$1" ] && [ "$1" != "--" ]; do
 done
 STRATEGY_OPTIONS="${STRATEGY_OPTIONS[*]}"
 
-if [ ${STRATEGY} != "clear" ]; then
+if [ "${STRATEGY}" ] && [ "${STRATEGY}" != "clear" ]; then
   if [ "$1" != "--" ]; then
     die "Invalid jit line. A jit line MUST include the '--' separator as the last jit argument."
   fi
