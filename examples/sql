@@ -1,0 +1,246 @@
+#!/usr/bin/env jit cc -c99 -I. -lsqlite3 --
+
+#include <stdio.h>
+#include <sqlite3.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <ctype.h>
+
+enum { SQL_MODE_ASK, SQL_MODE_SELECT };
+
+static int stricmp (const char *p1, const char *p2)
+{
+  register unsigned char *s1 = (unsigned char *) p1;
+  register unsigned char *s2 = (unsigned char *) p2;
+  unsigned char c1, c2;
+
+  do
+  {
+      c1 = (unsigned char) toupper((int)*s1++);
+      c2 = (unsigned char) toupper((int)*s2++);
+      if (c1 == '\0')
+      {
+            return c1 - c2;
+      }
+  }
+  while (c1 == c2);
+
+  return c1 - c2;
+}
+
+static sqlite3 *db = 0;                         /* handle to database */
+static const char *external_command = 0;        /* external_command to run */
+static int sql_mode = SQL_MODE_ASK;
+
+static void die(const char* msg) {
+    fprintf(stderr, "%s\n", msg);
+    exit(3);
+}
+
+static void echo_callback(int columns, const char **values)
+{
+    for(int i=0; i<columns; i++) {
+        if(i) fputs(" ", stdout);
+        fputs(values[i] ? values[i] : "NULL", stdout);
+    }
+    fputs("\n", stdout);
+}
+
+static void cmd_callback(int columns, const char **values)
+{
+    const char* argv[columns+2];
+    argv[0] = (char*)external_command;
+
+    for(int i=0; i<columns; i++) {
+        argv[i+1] = values[i] ? values[i] : "NULL";
+    }
+    argv[columns+1] = 0;
+
+    pid_t child_pid = fork();
+    if(child_pid < 0)
+        die("fork");
+
+    if (child_pid == 0) /* fork() returns 0 for the child process */
+    {
+        execvp(external_command, (char**)argv);
+        die(external_command);
+    }
+
+    int status;
+    wait(&status); /* wait for child to exit, and store child's exit status */
+
+    if(WEXITSTATUS(status) != 0) {
+        fprintf(stderr, "%s exited with error %d.\n", external_command, WEXITSTATUS(status));
+        exit(WEXITSTATUS(status));
+    }
+}
+
+static int callback_columns = 0;
+
+static int callback(int columns, const char **values)
+{
+    callback_columns++;
+    (external_command ? cmd_callback : echo_callback)(columns, values);
+    return (sql_mode == SQL_MODE_ASK) ? 1 : 0;
+}
+
+static void checked(const char* msg, int rc) {
+    if(!rc) return;
+
+    fprintf(stderr, "%s: %s\n", msg, sqlite3_errmsg(db));
+    sqlite3_close(db);
+    exit(2);
+}
+
+#define LOG(s) fprintf(stderr, #s "='%s'.\n", s)
+
+static char* argv0 = 0;
+
+static void usage() {
+    fprintf(stderr, "%s [ -f database ] ask query [ argument argument .. ]\n", argv0);
+    fprintf(stderr, "%s [ -f database ] [ -x external_command ] select query [ argument argument .. ]\n", argv0);
+
+    exit(1);
+}
+
+/*
+ * Bind a value. This supports integers (if arg can be parsed by strtol than it
+ * is supposed to be a number), strings, and escaped strings ("\"value\"").
+ * Escaping can be done via '"' and "'", but also with a '@' character.
+ *
+ * Note that the \a arg value typically originates on the command line, and
+ * every escaping, in this environment, must potentially be done twice; i.e.
+ * both
+ *   sql ask "SELECT ?" 1
+ *   sql ask "SELECT ?" '1'
+ * return the number 1, while
+ *   sql ask "SELECT ?" '"1"'
+ *   sql ask "SELECT ?" '\'1\''
+ *   sql ask "SELECT ?" '@1@'
+ * return the string '1'
+ */
+static int sqlite3_bind(sqlite3_stmt* stmt, int idx, const char* s)
+{
+    /* number */
+    char* err = 0;
+    long argl = strtol(s, &err, 0);
+
+    if(!*err)
+        return sqlite3_bind_int64(stmt, idx, argl);
+
+    /* escaped string */
+
+    static const char* const quotes = "\'\"@";
+    unsigned len = strlen(s);
+
+    if(strchr(quotes, *s) && len >= 2 && s[len-1] == *s) {
+        return sqlite3_bind_text(stmt, idx, s+1, len-2, SQLITE_STATIC);
+    }
+
+    /* regular string? */
+    return sqlite3_bind_text(stmt, idx, s, len, SQLITE_STATIC);
+}
+
+int main(int argc, char **argv)
+{
+    argv0 = *argv++;
+
+    /*
+     * Parse arguments
+     */
+
+    const char* dbfile = getenv("DATABASE");
+
+    while(*argv) {
+        if(!strcmp(*argv, "-f")) {
+            argv++;
+            dbfile = *argv++;
+            if(!dbfile) usage();
+        }
+        else if(!strcmp(*argv, "-x")) {
+            argv++;
+            external_command = *argv++;
+            if(!external_command) usage();
+        }
+        else {
+            if(!stricmp(*argv, "SELECT"))
+                sql_mode = SQL_MODE_SELECT;
+            else if(!stricmp(*argv, "ASK"))
+                sql_mode = SQL_MODE_SELECT;
+            else
+                usage();
+
+            argv++;
+            break;
+        }
+    }
+
+
+    if(sql_mode == SQL_MODE_ASK && external_command) usage();
+
+    /*
+     * Open database.
+     */
+
+    if(!dbfile) {
+        fprintf(stderr, "Please set the database file via the DATABASE environment var or the -f argument. ");
+        fprintf(stderr, "This run uses ':memory:' for now.\n");
+    }
+
+    checked(dbfile, sqlite3_open_v2(dbfile, &db, SQLITE_OPEN_READONLY, NULL));
+
+    /*
+     * Prepare query
+     */
+
+    if(!*argv) {
+        fprintf(stderr, "Missing query.\n");
+        exit(1);
+    }
+
+    char query[strlen(*argv) + 10];
+    sprintf(query, "SELECT %s", *argv++);
+
+    sqlite3_stmt *stmt = 0;
+    checked(query, sqlite3_prepare_v2(db, query, -1, &stmt, 0));
+
+    /*
+     * Bind arguments
+     */
+
+    {
+        for(int idx = 1; *argv; idx++, argv++)
+            checked(*argv, sqlite3_bind(stmt, idx, *argv));
+    }
+
+    /*
+     * Evaluate results
+     */
+
+    int columns = sqlite3_column_count(stmt);
+
+    if (columns)
+	{
+        const char* values[columns+1];
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            for (int i = 0; i < columns; ++i) {
+                const char* value = (const char*)sqlite3_column_text(stmt, i);
+                values[i] = value;
+            }
+
+            callback(columns, values);
+        }
+    }
+
+    /*
+     * Clean up statement and database.
+     */
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+
+    if(sql_mode == SQL_MODE_ASK)
+        return callback_columns == 0 ? 1 : 0;
+    else
+        return 0;
+}
