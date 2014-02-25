@@ -37,17 +37,23 @@ die() {
 #
 STRATEGY=$1; shift
 
+STRATEGY_OPTIONS=()
 while [ "$1" ] && [ "$1" != "--" ]; do
-  STRATEGY_OPTIONS="$STRATEGY_OPTIONS $1"
+  STRATEGY_OPTIONS+=$1
   shift
 done
+STRATEGY_OPTIONS="${STRATEGY_OPTIONS[*]}"
 
-if [ "$1" != "--" ]; then
-  die "Invalid jit line. A jit line MUST include the '--' separator as the last jit argument."
+if [ ${STRATEGY} != "clear" ]; then
+  if [ "$1" != "--" ]; then
+    die "Invalid jit line. A jit line MUST include the '--' separator as the last jit argument."
+  fi
+  shift
+
+  SOURCE=$1; shift
+else
+  SOURCE=$STRATEGY_OPTIONS
 fi
-shift
-
-SOURCE=$1; shift
 
 [ "${SOURCE}" ] || usage
 
