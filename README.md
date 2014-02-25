@@ -20,7 +20,7 @@ jit assumes the tools needed by a specific strategy - for example flex(1) and
 cc(1) - are installed on the target system.
 
 Usually **jit** would be embedded in the target script. This is the hello world
-example (also in example/hello):
+example (also in examples/hello):
 
     #!/usr/bin/env jit cc --
 
@@ -32,15 +32,15 @@ example (also in example/hello):
     }
 
 Make sure jit is installed and in your $PATH and set this script executable 
-(`chmod a+x example/hello`). Now you can run this script directly. On the first 
+(`chmod a+x examples/hello`). Now you can run this script directly. On the first 
 invocation **jit** produces a binary; on subsequent invocations the already 
 produced binary will be run again.
 
-    ./example/hello
-    cc'ing ./example/hello into /Users/eno/.jit//projects/native/jit/example/hello
+    ./examples/hello
+    cc'ing ./examples/hello into /Users/eno/.jit//projects/native/jit/examples/hello
     Hello world
 
-**Note:** jit's output (*cc'ing ./example/hello ..*) is written to stderr to 
+**Note:** jit's output (*cc'ing ./examples/hello ..*) is written to stderr to 
 not mingle with anything printed from the script itself.
 
 ## CLEARING jitted BINARIES
