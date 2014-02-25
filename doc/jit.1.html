@@ -97,7 +97,7 @@ Current strategies include:</p>
 <span class="man-ref">cc<span class="s">(1)</span></span> - are installed on the target system.</p>
 
 <p>Usually <strong>jit</strong> would be embedded in the target script. This is the hello world
-example (also in example/hello):</p>
+example (also in examples/hello):</p>
 
 <pre><code>#!/usr/bin/env jit cc
 
@@ -110,16 +110,16 @@ int main() {
 </code></pre>
 
 <p>Make sure jit is installed and in your $PATH and set this script executable
-(<code>chmod a+x example/hello</code>). Now you can run this script directly. On the first
+(<code>chmod a+x examples/hello</code>). Now you can run this script directly. On the first
 invocation <strong>jit</strong> produces a binary; on subsequent invocations the already
 produced binary will be run again.</p>
 
-<pre><code>./example/hello
-cc'ing ./example/hello into /Users/eno/.jit//projects/native/jit/example/hello
+<pre><code>./examples/hello
+cc'ing ./examples/hello into /Users/eno/.jit//projects/native/jit/examples/hello
 Hello world
 </code></pre>
 
-<p><strong>Note:</strong> jit's output (<em>cc'ing ./example/hello ..</em>) is written to stderr to
+<p><strong>Note:</strong> jit's output (<em>cc'ing ./examples/hello ..</em>) is written to stderr to
 not mingle with anything printed from the script itself.</p>
 
 <h2 id="CLEARING-jitted-BINARIES">CLEARING jitted BINARIES</h2>
