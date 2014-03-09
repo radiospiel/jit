@@ -60,7 +60,7 @@ fi
 FULL_SOURCE=$(cd "$(dirname "${SOURCE}")" && pwd)/$(basename "${SOURCE}")
 
 REL_SOURCE=${FULL_SOURCE#$HOME}
-BINARY=~/.jit/$REL_SOURCE
+BINARY=${JIT_HOME:-$HOME/.jit}/$REL_SOURCE
 
 if [ ${STRATEGY} = "clear" ] ; then
   if [ -e ${BINARY} ] ; then
