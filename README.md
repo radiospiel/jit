@@ -62,11 +62,17 @@ The following commands, for example, would install `jit` into `/usr/local/bin`:
 
 ## FILES
 
-jitted binaries are stored below `$HOME/.jit`.
+jitted binaries are stored below `$JIT_HOME`, which defaults to `$HOME/.jit`.
+
+## ENVIRONMENT SETTINGS
+
+**JIT_HOME:** when set denotes the place to store jitted binaries.
 
 ## LIMITATIONS
 
-Each jitted application must be implemented in a single source file.
+- Each jitted application must be implemented in a single source file.
+- The absolute path to a jitted application should not be too long - the jitted
+  binary will be stored under a namw which is longer than the original pathname.
 
 ## COPYRIGHT
 

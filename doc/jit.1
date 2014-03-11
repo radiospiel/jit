@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "JIT" "1" "January 2014" "" ""
+.TH "JIT" "1" "March 2014" "" ""
 .
 .SH "NAME"
 \fBjit\fR \- compile source files as needed
@@ -30,7 +30,7 @@ Usually \fBjit\fR would be embedded in the target script\. This is the hello wor
 .
 .nf
 
-#!/usr/bin/env jit cc
+#!/usr/bin/env jit cc \-\-
 
 #include <stdio\.h>
 
@@ -82,10 +82,20 @@ sudo chmod a+x /usr/local/bin/jit
 .IP "" 0
 .
 .SH "FILES"
-jitted binaries are stored below \fB$HOME/\.jit\fR\.
+jitted binaries are stored below \fB$JIT_HOME\fR, which defaults to \fB$HOME/\.jit\fR\.
+.
+.SH "ENVIRONMENT SETTINGS"
+\fBJIT_HOME:\fR when set denotes the place to store jitted binaries\.
 .
 .SH "LIMITATIONS"
+.
+.IP "\(bu" 4
 Each jitted application must be implemented in a single source file\.
+.
+.IP "\(bu" 4
+The absolute path to a jitted application should not be too long \- the jitted binary will be stored under a namw which is longer than the original pathname\.
+.
+.IP "" 0
 .
 .SH "COPYRIGHT"
 \fBjit\fR is Copyright (C) 2013,1024 @radiospiel \fIhttps://github\.com/radiospiel\fR

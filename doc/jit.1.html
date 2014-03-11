@@ -59,6 +59,7 @@
     <a href="#CLEARING-jitted-BINARIES">CLEARING jitted BINARIES</a>
     <a href="#INSTALLATION">INSTALLATION</a>
     <a href="#FILES">FILES</a>
+    <a href="#ENVIRONMENT-SETTINGS">ENVIRONMENT SETTINGS</a>
     <a href="#LIMITATIONS">LIMITATIONS</a>
     <a href="#COPYRIGHT">COPYRIGHT</a>
     <a href="#SEE-ALSO">SEE ALSO</a>
@@ -99,7 +100,7 @@ Current strategies include:</p>
 <p>Usually <strong>jit</strong> would be embedded in the target script. This is the hello world
 example (also in examples/hello):</p>
 
-<pre><code>#!/usr/bin/env jit cc
+<pre><code>#!/usr/bin/env jit cc --
 
 #include &lt;stdio.h&gt;
 
@@ -142,11 +143,20 @@ sudo chmod a+x /usr/local/bin/jit
 
 <h2 id="FILES">FILES</h2>
 
-<p>jitted binaries are stored below <code>$HOME/.jit</code>.</p>
+<p>jitted binaries are stored below <code>$JIT_HOME</code>, which defaults to <code>$HOME/.jit</code>.</p>
+
+<h2 id="ENVIRONMENT-SETTINGS">ENVIRONMENT SETTINGS</h2>
+
+<p><strong>JIT_HOME:</strong> when set denotes the place to store jitted binaries.</p>
 
 <h2 id="LIMITATIONS">LIMITATIONS</h2>
 
-<p>Each jitted application must be implemented in a single source file.</p>
+<ul>
+<li>Each jitted application must be implemented in a single source file.</li>
+<li>The absolute path to a jitted application should not be too long - the jitted
+binary will be stored under a namw which is longer than the original pathname.</li>
+</ul>
+
 
 <h2 id="COPYRIGHT">COPYRIGHT</h2>
 
@@ -159,7 +169,7 @@ sudo chmod a+x /usr/local/bin/jit
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'></li>
-    <li class='tc'>January 2014</li>
+    <li class='tc'>March 2014</li>
     <li class='tr'>jit(1)</li>
   </ol>
 
