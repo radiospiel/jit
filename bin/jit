@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 usage() {
@@ -52,7 +52,7 @@ fi
 
 if [ ${SOURCE} -nt ${BINARY} ] ; then
   # Build binary if needed.
-  TMP_SOURCE=$(mktemp -t jit)
+  TMP_SOURCE=$(mktemp -t jit.XXXX)
 
   # read and evaluate strategy line
   STRATEGY=$(sed -e 1d -e 3,99999d ${SOURCE})
@@ -76,6 +76,7 @@ if [ ${SOURCE} -nt ${BINARY} ] ; then
   
   # echo $(dirname $0)/$STRATEGY "${TMP_SOURCE}" "${BINARY}" $OPTIONS >&2
   
+  mkdir -p $(dirname ${BINARY})
   $(dirname $0)/$STRATEGY "${TMP_SOURCE}" "${BINARY}" $OPTIONS
 fi
 
