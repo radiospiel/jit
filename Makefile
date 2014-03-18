@@ -1,7 +1,7 @@
 .PHONY: test doc
 	
 test:
-	roundup test/*-test.sh
+	test/roundup test/*-test.sh
 
 doc:
 	@ which -s ronn || (echo "Please install ronn: gem install ronn" && false)
