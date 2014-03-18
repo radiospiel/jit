@@ -22,7 +22,8 @@ cc(1) - are installed on the target system.
 Usually **jit** would be embedded in the target script. This is the hello world
 example (also in examples/hello):
 
-    #!/usr/bin/env jit cc --
+    #!/usr/bin/env jit
+    jit.cc
 
     #include <stdio.h>
 

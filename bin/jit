@@ -1,15 +1,15 @@
 #!/bin/sh
+set -e
 
 usage() {
   cat <<-USAGE
-jit translates a script into a binary when the script is first run.
+jit translates a script into a binary when the script is first run. jit is usually embedded
+into scripts via a header like this:
 
-Usage: jit <strategy> [ option .. ] -- <source> args ..."
+!#/usr/bin/env jit
+jit.cc <strategy> <option> <option> ..
 
-Usually embedded into scripts via '!#/usr/bin/env jit <strategy> [ <option> .. ] --'.
-Note: the trailing '--' MUST BE PRESENT in the shebang line!
-
-Supported strategies are:
+Supported strategies include:
 - cc: simple compilation via cc(1)
 - flex: simple compilation via flex(1) and cc(1)
 USAGE
@@ -22,80 +22,61 @@ die() {
   exit 127
 }
 
-# A shebang line of
-#
-#   #!/usr/bin/env jit cc -lnatpmp --
-#
-# combined with a script invocation of 
-#
-#   script a b c
-#
-# translates into these arguments
-#
-#   cc -lnatpmp -- ./natpmpc.c a b c
-#
-#
-STRATEGY=$1; shift
-
-STRATEGY_OPTIONS=()
-while [ "$1" ] && [ "$1" != "--" ]; do
-  STRATEGY_OPTIONS+=$1
+if [ "$1" = "--clear" ]; then
+  JIT_CLEAR=y
   shift
-done
-STRATEGY_OPTIONS="${STRATEGY_OPTIONS[*]}"
-
-if [ "${STRATEGY}" ] && [ "${STRATEGY}" != "clear" ]; then
-  if [ "$1" != "--" ]; then
-    die "Invalid jit line. A jit line MUST include the '--' separator as the last jit argument."
-  fi
-  shift
-
-  SOURCE=$1; shift
-else
-  SOURCE=$STRATEGY_OPTIONS
 fi
 
-[ "${SOURCE}" ] || usage
+# The script needs a single argument.
+[ "$1" ] || usage
 
-FULL_SOURCE=$(cd "$(dirname "${SOURCE}")" && pwd)/$(basename "${SOURCE}")
+SOURCE=$1
+shift
 
-REL_SOURCE=${FULL_SOURCE#$HOME}
-BINARY=${JIT_HOME:-$HOME/.jit}/$REL_SOURCE
+# The jit script compiles the source into a binary. Determine the binary
+# path. 
 
-if [ ${STRATEGY} = "clear" ] ; then
-  if [ -e ${BINARY} ] ; then
-    rm ${BINARY}
-    echo "Removed ${BINARY}" >&2
-  fi
-  exit 0
+# Get the full path to the SOURCE.
+FULL_SOURCE=$(cd "$(dirname "$SOURCE")" && pwd)/$(basename "$SOURCE")
+
+# Get the path relative to the HOME directory.
+RELATIVE_SOURCE="${FULL_SOURCE#$HOME}"
+
+# Combine {JIT_}HOME and RELATIVE_SOURCE into BINARY target path.
+BINARY="${JIT_HOME:-$HOME/.jit}/$RELATIVE_SOURCE"
+
+if [ "$JIT_CLEAR" = "y" ]; then
+  rm "${BINARY}" 2> /dev/null || true
+  exit
 fi
-  
+
 if [ ${SOURCE} -nt ${BINARY} ] ; then
+  # Build binary if needed.
+  TMP_SOURCE=$(mktemp -t jit)
 
-echo "${STRATEGY}'ing ${SOURCE} into ${BINARY}" >&2
-mkdir -p -m 0777 $(dirname ${BINARY})
+  # read and evaluate strategy line
+  STRATEGY=$(sed -e 1d -e 3,99999d ${SOURCE})
+  if [[ "$STRATEGY" == jit.* ]] ; then
+    cat ${SOURCE} | sed -e '1,2d' > $TMP_SOURCE
+  else
+    echo "Invalid strategy line: '$STRATEGY', falling back to 'jit.cc'" >&2
+    STRATEGY="jit.cc"
+    cat ${SOURCE} | sed -e '1,1d' > $TMP_SOURCE
+  fi
+  
+  STRATEGY="$STRATEGY "
+  OPTIONS=${STRATEGY#* }
+  STRATEGY=${STRATEGY%% *}
 
-case "${STRATEGY}" in
-  cc)
-    sed '1 s/^.*$//' ${SOURCE} > ${BINARY}.c &&
-    cc -o ${BINARY} ${BINARY}.c -O2 ${STRATEGY_OPTIONS}
-    ;;
-  flex)
-    sed '1 s/^.*$//' ${SOURCE} > ${BINARY}.fl &&
-    flex -o ${BINARY}.c ${BINARY}.fl &&
-    cc -o ${BINARY} ${BINARY}.c -O2 ${STRATEGY_OPTIONS} -lfl
-    ;;
-  *)
-    echo "Unknown jit strategy \"${STRATEGY}\"" >&2
-    usage
-    ;;
-esac
-
-[ $? == "0" ] || die "Cannot build ${BINARY}"
-
-# set timestamp of binary to timestamp of source file
-touch -r ${SOURCE} ${BINARY}
-
+  if [ "$OPTIONS" ]; then
+    echo "$STRATEGY'ing ${SOURCE} (w/options $OPTIONS)" >&2
+  else
+    echo "$STRATEGY'ing ${SOURCE}" >&2
+  fi
+  
+  # echo $(dirname $0)/$STRATEGY "${TMP_SOURCE}" "${BINARY}" $OPTIONS >&2
+  
+  $(dirname $0)/$STRATEGY "${TMP_SOURCE}" "${BINARY}" $OPTIONS
 fi
 
 exec -a ${SOURCE} ${BINARY} "$@"

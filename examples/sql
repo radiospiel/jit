@@ -1,4 +1,5 @@
-#!/usr/bin/env jit cc -c99 -I. -lsqlite3 --
+#!/usr/bin/env jit 
+jit.cc -c99 -I. -lsqlite3
 
 #include <stdio.h>
 #include <sqlite3.h>

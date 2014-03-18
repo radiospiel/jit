@@ -1,0 +1,10 @@
+#!/usr/bin/env jit
+jit.flex
+
+%%
+
+[aeiou]     putchar(yytext[0]);
+.           ;
+
+%%
+

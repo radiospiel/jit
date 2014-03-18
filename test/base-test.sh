@@ -19,7 +19,7 @@ it_gets_args() {
 # verify parameter passing
 it_rebuilds_binaries_when_changed() {
   # clean the compiled script, if it exists
-  jit clear $HERE/rebuild.jit
+  jit --clear $HERE/rebuild.jit
   
   cp $HERE/rebuild0.jit $HERE/rebuild.jit
   touch -A -010000 $HERE/rebuild.jit
@@ -32,7 +32,7 @@ it_rebuilds_binaries_when_changed() {
   test "$r" = "rebuild changed"
 
   # clean the compiled script, if it exists
-  jit clear $HERE/rebuild.jit
+  jit --clear $HERE/rebuild.jit
   
   cp $HERE/rebuild0.jit $HERE/rebuild.jit
   touch -A -010000 $HERE/rebuild.jit

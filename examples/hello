@@ -1,4 +1,9 @@
-#!/usr/bin/env jit cc --
+#!/usr/bin/env jit 
+jit.cc
+
+#ifdef FAIL
+#error FAIL
+#endif
 
 #include <stdio.h>
 
