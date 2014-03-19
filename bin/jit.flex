@@ -11,4 +11,5 @@ BINARY="$1"; shift
 FLEX_LIB=-ll
 
 flex -o ${BINARY}.c ${SOURCE} &&
-cc -o ${BINARY} ${BINARY}.c -O2 $@ $FLEX_LIB
+cc -o ${BINARY} ${BINARY}.c -O2 $@ $FLEX_LIB &&
+rm ${BINARY}.c
