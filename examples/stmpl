@@ -1,0 +1,33 @@
+#!/usr/bin/env jit
+jit.flex
+
+/* 
+ * A simple text replacement script; replaces all occurences 
+ * of ${{NAME}} with the environment setting NAME.
+ */
+ 
+%%
+
+\$\{\{[a-zA-Z0-9_]+\}\}   {
+                              yytext[yyleng-2] = 0;
+                              const char* env = yytext+3;
+                              const char* value = getenv(env);
+                              if(!value) {
+                                  fprintf(stderr, "Missing environment value: '%s'\n", env);
+                                  exit(1);
+                              }
+                              printf("%s", value);
+                          }
+
+%%
+
+int main(int argc, char** argv) {
+  yyin = argc == 1 ? stdin : fopen(argv[1], "r");
+  if(!yyin) {
+    perror(argv[1]);
+    return 1;
+  }
+  
+  yylex();
+  return 0;
+}
