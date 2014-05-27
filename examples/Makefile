@@ -1,0 +1,2 @@
+all:
+	roundup.sh *.roundup
