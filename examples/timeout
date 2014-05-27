@@ -1,0 +1,70 @@
+#!/usr/bin/env jit
+jit.cc
+
+/* timeOut NNN command args ... */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
+#include <math.h>
+
+static void die(const char* msg) {
+	perror(msg);
+	exit(1);
+}
+
+static void usage() {
+	fprintf(stderr, "timeOut N[.NN] command [ args .. ]\n");
+	exit(2);
+}
+
+static void on_sigchld(int _) {}
+
+int main(int argc, char** argv) {
+	//
+	// parse arguments
+	if(argc < 3) usage();
+
+	double timeOut = atof(argv[1]);
+	if(timeOut <= 0.0) usage();
+	
+	//
+	// By installing a SIGCHLD handler the select call below will be
+	// interrupted when the child exits. 
+	signal(SIGCHLD, on_sigchld);
+
+	//
+	// Run the child
+	int pid = fork();
+	if(!pid) {
+		execvp(argv[2], argv+2);
+		die(argv[2]);
+	}
+	
+	//
+	// wait for child to terminate for up to timeOut seconds. Note: 
+	// The return value of select will be 0, if the select timed out, and
+	// -1 otherwise (i.e. if the child finished running).
+	struct timeval tv;
+	tv.tv_sec = floor(timeOut);
+	tv.tv_usec = (timeOut - tv.tv_sec) * 1000000;
+	int r = select(0, NULL, NULL, NULL, &tv);
+
+	// the child finished running..
+	if(r == -1) {
+		int status;
+		if(waitpid(pid, &status, WNOHANG) < 0)
+			die("waitpid");
+
+		if(!WIFEXITED(status)) 
+			die("Child was stopped.");
+		
+		return WEXITSTATUS(status);
+	}
+
+	// The child is still running. Kill it.
+	fprintf(stderr, "Child not done after %.3f secs; terminating...\n", timeOut);
+	kill(pid, SIGKILL);
+	return 98;
+}

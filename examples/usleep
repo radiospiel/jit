@@ -1,0 +1,33 @@
+#!/usr/bin/env jit
+jit.cc
+
+/* Usage: usleep MICROSECONDS */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+static void usage() {
+	fprintf(stderr, "Usage: usleep MICROSECONDS\n");
+	exit(2);
+}
+
+int main(int argc, char** argv) {
+	//
+	// parse arguments
+	if(argc != 2) usage();
+
+	int timeOut = atoi(argv[1]);
+	if(timeOut <= 0) usage();
+	
+	//
+	// wait for child to terminate for up to timeOut seconds. Note: 
+	// The return value of select will be 0, if the select timed out, and
+	// -1 otherwise (i.e. if the child finished running).
+	struct timeval tv;
+	tv.tv_sec = timeOut / 1000000;
+	tv.tv_usec = timeOut % 1000000;
+	select(0, NULL, NULL, NULL, &tv);
+
+	return 0;
+}
