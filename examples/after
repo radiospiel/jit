@@ -1,0 +1,37 @@
+#!/usr/bin/env jit
+jit.cc
+
+/* Usage: after N.NN cmd .. */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <math.h>
+
+static void usage() {
+	fprintf(stderr, "Usage: after SECONDS cmd ..\n");
+	exit(2);
+}
+
+int main(int argc, char** argv) {
+	//
+	// parse arguments
+	if(argc < 3) usage();
+
+	double timeout = atof(argv[1]);
+	if(timeout <= 0.0) usage();
+	
+	//
+	// wait for child to terminate for up to timeout seconds. Note: 
+	// The return value of select will be 0, if the select timed out, and
+	// -1 otherwise (i.e. if the child finished running).
+	struct timeval tv;
+	tv.tv_sec = floor(timeout);
+	tv.tv_usec = (timeout - tv.tv_sec) * 1000000;
+	select(0, NULL, NULL, NULL, &tv);
+
+	execvp(argv[2], argv+2);
+	perror(argv[2]);
+
+	return 1;
+}

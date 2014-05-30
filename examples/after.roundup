@@ -1,0 +1,6 @@
+#!/usr/bin/env roundup
+describe "test after tool"
+
+it_takes_some_time() {
+  /usr/bin/time -p ./after 0.1 true 2>&1 | grep -E "real.*0\.1"
+}
