@@ -1,14 +1,16 @@
-# The pipe2me binary to test
+here=$(cd $(dirname $0) && pwd)
+export PATH=$here/../bin:$PATH
 
-# A temporary workspace to run tests.
-scrub=$(mktemp -d -t jit)
+
+mkdir -p $here/tmp
+scrub=$(mktemp -d $here/tmp/scrub.XXXXXX)
+mkdir -p $scrub
 
 before() {
-  mkdir -p $scrub
+  rm -rf $scrub/*
   cd $scrub
 }
 
 after() {
-  cd ..
-  rm -rf $scrub
+  :
 }

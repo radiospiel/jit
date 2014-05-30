@@ -1,0 +1,12 @@
+#!/usr/bin/env roundup
+describe "Do we load the right jit?"
+
+. $(dirname $0)/testhelper.inc
+
+it_finds_jit() {
+  [[ $(which jit) = $here/../bin/jit ]]
+}
+
+it_finds_everything_ok() {
+  true
+}

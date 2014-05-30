@@ -1,11 +1,9 @@
 #!/usr/bin/env roundup
 describe "test stmpl tool"
 
-stmpl=./stmpl
+. $(dirname $0)/testhelper.inc
 
-it_finds_jit() {
-  which jit
-}
+stmpl=$here/stmpl
 
 it_works() {
   [ "$HOME" = $(echo '${{HOME}}' | $stmpl) ]
@@ -20,5 +18,5 @@ it_works() {
 it_works_with_files() {
   export HERE=here
   export THERE='${there}}'
-  $stmpl stmpl.in | diff - stmpl.out
+  $stmpl $here/stmpl.in | diff - $here/stmpl.out
 }

@@ -1,46 +1,25 @@
 #!/usr/bin/env roundup
-describe "test on tool"
+describe "test 'once' tool"
 
-stmpl=./stmpl
+# here=$(cd $(dirname $0) && pwd)
+# export PATH=$here/../bin:$PATH
 
-here=$(cd $(dirname $0) && pwd)
-export PATH=$here/../bin:$PATH
-
-before() {
-  scrub=$(mktemp -d on.roundup.XXXXXX)
-  cd $scrub
-}
-
-after() {
-  cd $(dirname $0)
-  rm -rf $scrub
-}
-
-it_finds_jit() {
-  [[ $(which jit) = $here/../bin/jit ]]
-}
+. $(dirname $0)/testhelper.inc
 
 it_works_once() {
-  mkdir -p tmp/group
+  mkdir -p group
 
-  $here/after 0.1 touch tmp/group/event &
+  $here/after 0.1 touch group/event &
 
-  [[ $($here/once tmp/group/event) = tmp/group/event ]]
+  [[ $($here/once group/event) = group/event ]]
 }
+
 # 
 it_works_once_w_timeout() {
-  mkdir -p tmp/group
+  mkdir -p group
   [[ -x $here/timeout ]]
 
-  $here/after 0.1 touch tmp/group/event &
+  $here/after 0.1 touch group/event &
 
-  [[ $($here/timeout 1 $here/once tmp/group/event) = tmp/group/event ]]
+  [[ $($here/timeout 1 $here/once group/event) = group/event ]]
 }
-
-
-# 
-# it_works_with_files() {
-#   export HERE=here
-#   export THERE='${there}}'
-#   $stmpl stmpl.in | diff - stmpl.out
-# }

@@ -63,7 +63,7 @@ it_works_with_strings_and_numbers() {
 
 it_makes_sense_with_text_templates() {
   db=$scrub/test.sqlite3
-  echo "CREATE TABLE x(a,b); INSERT INTO x VALUES(1,1);INSERT INTO x values('2','4');" | sqlite3 $db
+  sqlite3 $db <<< "CREATE TABLE x(a,b); INSERT INTO x VALUES(1,1);INSERT INTO x values('2','4');"
 
   lines="x"
 
@@ -73,5 +73,6 @@ it_makes_sense_with_text_templates() {
     done
   }
 
+  later
   [ "$(f)" = "$(echo "--1--1--\n--2--4--")" ]
 }
