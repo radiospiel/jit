@@ -59,7 +59,7 @@ if [ ${SOURCE} -nt ${BINARY} ] ; then
   if [[ "$STRATEGY" == jit.* ]] ; then
     cat ${SOURCE} | sed -e '1,2d' > $TMP_SOURCE
   else
-    echo "Invalid strategy line: '$STRATEGY', falling back to 'jit.cc'" >&2
+    echo "Using default strategy 'jit.cc'" >&2
     STRATEGY="jit.cc"
     cat ${SOURCE} | sed -e '1,1d' > $TMP_SOURCE
   fi
@@ -77,7 +77,7 @@ if [ ${SOURCE} -nt ${BINARY} ] ; then
   # echo $(dirname $0)/$STRATEGY "${TMP_SOURCE}" "${BINARY}" $OPTIONS >&2
   
   mkdir -p $(dirname ${BINARY})
-  $(dirname $0)/$STRATEGY "${TMP_SOURCE}" "${BINARY}" $OPTIONS
+  $(dirname $0)/$STRATEGY "${SOURCE}" "${TMP_SOURCE}" "${BINARY}" $OPTIONS
 fi
 
 exec -a ${SOURCE} ${BINARY} "$@"

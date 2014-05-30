@@ -1,11 +1,14 @@
 #!/bin/bash
+set -e
 
-if [ -z "$2" ]; then
+if [ -z "$3" ]; then
   echo "jit.cc compiles a source file into a binary using cc." >&2
   exit 127
 fi
 
+ORIG_SOURCE="$1"; shift
 SOURCE="$1"; shift
 BINARY="$1"; shift
 
-cc -o $BINARY -x c $SOURCE -O2 $@
+# -x: treat file as C
+cc -o $BINARY -I$(dirname $ORIG_SOURCE) -Wall -x c $SOURCE -O2 $@
