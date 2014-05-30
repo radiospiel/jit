@@ -1,0 +1,30 @@
+#!/usr/bin/env roundup
+describe "test on tool"
+
+stmpl=./stmpl
+
+here=$(cd $(dirname $0) && pwd)
+export PATH=$here/../bin:$PATH
+
+before() {
+  scrub=$(mktemp -d on.roundup.XXXXXX)
+}
+
+after() {
+  rm -rf $scrub
+}
+
+it_finds_jit() {
+  [[ $(which jit) = $here/../bin/jit ]]
+}
+
+it_works() {
+  later
+  on tmp/group/event  
+}
+
+it_works_with_files() {
+  export HERE=here
+  export THERE='${there}}'
+  $stmpl stmpl.in | diff - stmpl.out
+}

@@ -1,0 +1,5 @@
+#!/usr/bin/env jit
+
+#define ON_MODE_ONCE
+#include "on.c"
+
