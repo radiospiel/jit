@@ -1,7 +1,7 @@
 #!/usr/bin/env jit
 jit.cc
 
-/* timeOut NNN command args ... */
+/* timeout NNN command args ... */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +15,7 @@ static void die(const char* msg) {
 }
 
 static void usage() {
-	fprintf(stderr, "timeOut N[.NN] command [ args .. ]\n");
+	fprintf(stderr, "timeout N[.NN] command [ args .. ]\n");
 	exit(2);
 }
 
@@ -26,8 +26,9 @@ int main(int argc, char** argv) {
 	// parse arguments
 	if(argc < 3) usage();
 
-	double timeOut = atof(argv[1]);
-	if(timeOut <= 0.0) usage();
+	double timeout = atof(argv[1]);
+	if(timeout <= 0.0) usage();
+	// fprintf(stderr, "timeout waits for %.2f msecs\n", 1000.0 * timeout);
 	
 	//
 	// By installing a SIGCHLD handler the select call below will be
@@ -43,12 +44,12 @@ int main(int argc, char** argv) {
 	}
 	
 	//
-	// wait for child to terminate for up to timeOut seconds. Note: 
+	// wait for child to terminate for up to timeout seconds. Note: 
 	// The return value of select will be 0, if the select timed out, and
 	// -1 otherwise (i.e. if the child finished running).
 	struct timeval tv;
-	tv.tv_sec = floor(timeOut);
-	tv.tv_usec = (timeOut - tv.tv_sec) * 1000000;
+	tv.tv_sec = floor(timeout);
+	tv.tv_usec = (timeout - tv.tv_sec) * 1000000;
 	int r = select(0, NULL, NULL, NULL, &tv);
 
 	// the child finished running..
@@ -64,7 +65,7 @@ int main(int argc, char** argv) {
 	}
 
 	// The child is still running. Kill it.
-	fprintf(stderr, "Child not done after %.3f secs; terminating...\n", timeOut);
+	fprintf(stderr, "Child not done after %.3f secs; terminating...\n", timeout);
 	kill(pid, SIGKILL);
 	return 98;
 }
