@@ -1,2 +1,2 @@
 all:
-	roundup.sh *.roundup
+	./roundup *.roundup
