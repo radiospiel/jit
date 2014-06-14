@@ -1,0 +1,10 @@
+#!/usr/bin/env jit
+jit.go
+
+package main
+
+import "fmt"
+
+func main() {
+  fmt.Println("jit.go says hi")
+}
