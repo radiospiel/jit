@@ -1,6 +1,7 @@
 .PHONY: test doc
 	
 test:
+	touch test/*.jit
 	test/roundup test/*-test.sh
 
 doc:
@@ -9,4 +10,4 @@ doc:
 	ronn --pipe --html README.md > doc/jit.1.html
 
 install:
-	install bin/jit bin/jit.* /usr/local/bin
+	install bin/jit.* /usr/local/bin

@@ -1,9 +1,0 @@
-#!/usr/bin/env jit
-jit.cc
-
-#include <stdio.h>
-
-int main() {
-  printf("rebuild changed\n");
-  return 0;
-}

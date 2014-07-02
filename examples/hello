@@ -1,5 +1,4 @@
-#!/usr/bin/env jit 
-jit.cc
+#!/usr/bin/env jit.cc
 
 #ifdef FAIL
 #error FAIL

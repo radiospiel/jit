@@ -1,10 +1,8 @@
-#!/usr/bin/env jit 
-jit.cc
+#!/usr/bin/env jit.cc
 
 #include <stdio.h>
 
 int main(int argc, char** argv) {
-  int i=0; 
   printf("%d", argc);
   while(*++argv) {
     printf(" %s", *argv);
