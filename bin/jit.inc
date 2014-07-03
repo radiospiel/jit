@@ -103,13 +103,13 @@ function build_binary() {
   return 0
 }
 
-is_up_to_date "$dist_binary"  && exec -a $0 "$dist_binary" "$@"
-is_up_to_date "$local_binary" && exec -a $0 "$local_binary" "$@"
+is_up_to_date "$dist_binary"  && exec -a $SOURCE "$dist_binary" "$@"
+is_up_to_date "$local_binary" && exec -a $SOURCE "$local_binary" "$@"
 
 if [[ ${JIT_DIST_BUILD:-y} = y ]] ; then
   JIT_DIST_BUILD=y 
-  build_binary "$dist_binary"  && exec -a $0 "$dist_binary" "$@"
+  build_binary "$dist_binary"  && exec -a $SOURCE "$dist_binary" "$@"
 fi
 
 JIT_DIST_BUILD=n
-build_binary "$local_binary" && exec -a $0 "$local_binary" "$@"
+build_binary "$local_binary" && exec -a $SOURCE "$local_binary" "$@"
