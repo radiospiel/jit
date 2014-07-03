@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv='content-type' value='text/html;charset=utf8'>
   <meta name='generator' value='Ronn/v0.7.3 (http://github.com/rtomayko/ronn/tree/0.7.3)'>
-  <title>jit(1) - compile source files as needed</title>
+  <title>jit.LANG(1) - compile source files as needed</title>
   <style type='text/css' media='all'>
   /* style: man */
   body#manpage {margin:0}
@@ -56,51 +56,55 @@
     <a href="#NAME">NAME</a>
     <a href="#SYNOPSIS">SYNOPSIS</a>
     <a href="#DESCRIPTION">DESCRIPTION</a>
-    <a href="#CLEARING-jitted-BINARIES">CLEARING jitted BINARIES</a>
     <a href="#INSTALLATION">INSTALLATION</a>
-    <a href="#FILES">FILES</a>
-    <a href="#ENVIRONMENT-SETTINGS">ENVIRONMENT SETTINGS</a>
+    <a href="#COMPILING-BINARIES-FOR-DISTRIBUTION">COMPILING BINARIES FOR DISTRIBUTION</a>
+    <a href="#ENVIRONMENT-VALUES">ENVIRONMENT VALUES</a>
     <a href="#LIMITATIONS">LIMITATIONS</a>
     <a href="#COPYRIGHT">COPYRIGHT</a>
-    <a href="#SEE-ALSO">SEE ALSO</a>
   </div>
 
   <ol class='man-decor man-head man head'>
-    <li class='tl'>jit(1)</li>
+    <li class='tl'>jit.LANG(1)</li>
     <li class='tc'></li>
-    <li class='tr'>jit(1)</li>
+    <li class='tr'>jit.LANG(1)</li>
   </ol>
 
   <h2 id="NAME">NAME</h2>
 <p class="man-name">
-  <code>jit</code> - <span class="man-whatis">compile source files as needed</span>
+  <code>jit.LANG</code> - <span class="man-whatis">compile source files as needed</span>
 </p>
 
 <h2 id="SYNOPSIS">SYNOPSIS</h2>
 
-<p>jit translates a script into a binary on the first run of the script. This allows
-for easier deployment of binary, native code - assuming the code itself is
-OS independent (using <code>#ifdef</code> conditionals or similar mechanisms, where needed.)</p>
+<p>jit.LANG translates a script into a binary on the first run of that script.
+This allows for easier deployment of binary, native code - assuming the code
+itself is OS independent (using <code>#ifdef</code> conditionals or similar mechanisms,
+where needed.)</p>
+
+<p>jit.LANG is also helps to cross compile and distribute scripts.</p>
 
 <h2 id="DESCRIPTION">DESCRIPTION</h2>
 
-<p><strong>jit</strong> translates a script into a binary when the script is run for the first time.
-jit itself is independent from the language of the script by different "strategies".
-Current strategies include:</p>
+<p><strong>jit.LANG</strong> translates a script into a binary when the script is run for the first time.
+The jit main package itself is independent from the language of the script; there are
+different language drivers.</p>
+
+<p>Current drivers include:</p>
 
 <ul>
-<li><strong>cc</strong>: to compile a C source file using <span class="man-ref">cc<span class="s">(1)</span></span></li>
-<li><strong>flex</strong>: to compile a file via <span class="man-ref">flex<span class="s">(1)</span></span> and <span class="man-ref">cc<span class="s">(1)</span></span></li>
+<li><strong>jit.cc</strong>: to compile a C source file using <span class="man-ref">cc<span class="s">(1)</span></span></li>
+<li><strong>jit.flex</strong>: to compile a file via <span class="man-ref">flex<span class="s">(1)</span></span> and <span class="man-ref">cc<span class="s">(1)</span></span></li>
+<li><strong>jit.go</strong>: to compile a go source file via <span class="man-ref">go<span class="s">(1)</span></span></li>
 </ul>
 
 
-<p>jit assumes the tools needed by a specific strategy - for example <span class="man-ref">flex<span class="s">(1)</span></span> and
+<p>jit.LANG assumes the tools needed by a specific strategy - for example <span class="man-ref">flex<span class="s">(1)</span></span> and
 <span class="man-ref">cc<span class="s">(1)</span></span> - are installed on the target system.</p>
 
-<p>Usually <strong>jit</strong> would be embedded in the target script. This is the hello world
+<p>To use jit a user would embed it in the target script. This is the hello world
 example (also in examples/hello):</p>
 
-<pre><code>#!/usr/bin/env jit cc --
+<pre><code>#!/usr/bin/env jit.cc
 
 #include &lt;stdio.h&gt;
 
@@ -116,61 +120,72 @@ invocation <strong>jit</strong> produces a binary; on subsequent invocations the
 produced binary will be run again.</p>
 
 <pre><code>./examples/hello
-cc'ing ./examples/hello into /Users/eno/.jit//projects/native/jit/examples/hello
+Building /Users/eno/projects/native/jit/examples/jit.cc.bin/hello
 Hello world
 </code></pre>
 
-<p><strong>Note:</strong> jit's output (<em>cc'ing ./examples/hello ..</em>) is written to stderr to
-not mingle with anything printed from the script itself.</p>
-
-<h2 id="CLEARING-jitted-BINARIES">CLEARING jitted BINARIES</h2>
-
-<p>It should not be necessary to manually clear a jitted binary. <code>jit</code> detects
-a new version of a source script automatically and rebuilds the binary as
-needed.</p>
-
-<p>If you still feel the need to remove a binary just look for it in <code>$HOME/.jit</code>
-and remove it.</p>
+<p><strong>Note:</strong> jit's output (<em>Building ..</em>) is written to stderr to not mingle with anything printed from the script itself.</p>
 
 <h2 id="INSTALLATION">INSTALLATION</h2>
 
-<p>Download the jit script from github and put it somewhere in your path.
-The following commands, for example, would install <code>jit</code> into <code>/usr/local/bin</code>:</p>
+<p>Depending on your system</p>
 
-<pre><code>sudo curl https://raw.github.com/radiospiel/jit/master/bin/jit &gt; /usr/local/bin/jit
-sudo chmod a+x /usr/local/bin/jit
+<pre><code>make install
 </code></pre>
 
-<h2 id="FILES">FILES</h2>
+<p>or</p>
 
-<p>jitted binaries are stored below <code>$JIT_HOME</code>, which defaults to <code>$HOME/.jit</code>.</p>
+<pre><code>sudo make install
+</code></pre>
 
-<h2 id="ENVIRONMENT-SETTINGS">ENVIRONMENT SETTINGS</h2>
+<p>installs all jit scripts into <code>/usr/local</code>.</p>
 
-<p><strong>JIT_HOME:</strong> when set denotes the place to store jitted binaries.</p>
+<h2 id="COMPILING-BINARIES-FOR-DISTRIBUTION">COMPILING BINARIES FOR DISTRIBUTION</h2>
+
+<p>jit can build binaries for distribution. These binaries are installed close to the source script,
+in a subdirectory named <code>jit.LANG.bin</code>, if it exists. For example, when running the script
+"example/hello", the resulting binary will be placed, for example, into example/jit.cc.bin/hello.darwin.amd64. You can distribute that binary, if you wish.</p>
+
+<p>This is most helpful with cross compilation to produce binaries, that can be run on
+platforms that are not that well-performing (say, arm), and with tool chains that
+support cross compilation right away (say, go). The jit.go driver supports cross compilation out
+of the box.</p>
+
+<p>To prevent distribution builds you either</p>
+
+<ul>
+<li>make sure the target directory does not exist or is not writable, and/or</li>
+<li>set the 'JIT_DIST_BUILD' environment variable to "n"</li>
+</ul>
+
+
+<h2 id="ENVIRONMENT-VALUES">ENVIRONMENT VALUES</h2>
+
+<ul>
+<li>JIT_DIST_BUILD: set to "n" to prevent distribution builds.</li>
+<li>JIT_GO_TARGET_PLATFORMS: target platforms for go cross compilation.</li>
+</ul>
+
 
 <h2 id="LIMITATIONS">LIMITATIONS</h2>
 
 <ul>
-<li>Each jitted application must be implemented in a single source file.</li>
+<li>Each jitted application should be implemented in a single source file.</li>
 <li>The absolute path to a jitted application should not be too long - the jitted
-binary will be stored under a namw which is longer than the original pathname.</li>
+binary will be stored under a name which is longer than the original pathname.</li>
 </ul>
 
 
 <h2 id="COPYRIGHT">COPYRIGHT</h2>
 
-<p><strong>jit</strong> is Copyright (C) 2013,1024 @radiospiel <a href="https://github.com/radiospiel" data-bare-link="true">https://github.com/radiospiel</a></p>
-
-<h2 id="SEE-ALSO">SEE ALSO</h2>
-
-<p><span class="man-ref">cc<span class="s">(1)</span></span>, <span class="man-ref">flex<span class="s">(1)</span></span>.</p>
+<p>The <strong>jit</strong> package is Copyright (C) 2013,1024 @radiospiel <a href="https://github.com/radiospiel" data-bare-link="true">https://github.com/radiospiel</a>.
+It is released under the terms of the MIT license.</p>
 
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'></li>
-    <li class='tc'>March 2014</li>
-    <li class='tr'>jit(1)</li>
+    <li class='tc'>July 2014</li>
+    <li class='tr'>jit.LANG(1)</li>
   </ol>
 
   </div>
