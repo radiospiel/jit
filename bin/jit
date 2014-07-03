@@ -1,0 +1,11 @@
+#!/bin/bash
+cat <<-XXX
+jit scripts have been superseded by 'jit.LANG' scripts. An offending script is still trying
+to use the old jit compilation script. Please replace the invocation with a corrected one.
+
+For more information see https://github.com/radiospiel/jit"
+
+Note: jit was invoked via '$0 $@'"
+The last argument usually denotes the offending script."
+XXX
+exit 1

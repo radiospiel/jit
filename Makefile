@@ -10,4 +10,4 @@ doc:
 	ronn --pipe --html README.md > doc/jit.1.html
 
 install:
-	install bin/jit.* /usr/local/bin
+	install bin/jit bin/jit.* /usr/local/bin
