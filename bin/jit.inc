@@ -81,7 +81,7 @@ function is_up_to_date() {
 function build_binary() {
   BINARY=$1
   if ! [ -x "$(dirname $BINARY)" ]; then
-    if [[ $JIT_DIST_BUILD != y ]]; then 
+    if [[ $JIT_DIST_BUILD == y ]]; then 
       log "Cannot build into $(dirname $BINARY)"
       return 1
     fi
