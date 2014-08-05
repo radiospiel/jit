@@ -18,13 +18,13 @@ function build() {
     < $SOURCE grep "// JIT_CFLAGS_$os=" | sed "sx// JIT_CFLAGS_$os=xx"
   )
 
-  if [ $os == LINUX ] && type -p tcc > /dev/null ; then
-    tcc -o $BINARY -I$(dirname "$SOURCE") -Wall -x c -O2 $flags $PREPROCESSED_SOURCE
-  else
-    cc -o $BINARY -I$(dirname "$SOURCE") -Wall -x c -O2 $flags $PREPROCESSED_SOURCE
-  fi
+  # if [ $os == LINUX ] && type -p tcc > /dev/null ; then
+  #   tcc -o $BINARY -I$(dirname "$SOURCE") -Wall -x c -O2 $flags $PREPROCESSED_SOURCE
+  # else
+    cc -o $BINARY -I$(dirname "$SOURCE") -Wall -x c -std=c99 -D_BSD_SOURCE -D_POSIX_SOURCE -O2 $flags $PREPROCESSED_SOURCE
+  # fi
 }
 
 JIT_EXT=c
-jit_inc=$(<<<"$0" sed 's-[.][^.]*$-.inc-')
+jit_inc=$(echo "$0" | sed 's-[.][^.]*$-.inc-')
 . "$jit_inc"

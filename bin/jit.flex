@@ -19,24 +19,26 @@ function build() {
   )
 
   flex -o ${PREPROCESSED_SOURCE}.c ${PREPROCESSED_SOURCE} && (
-  if [ $os == LINUX ] && type -p tcc > /dev/null ; then
-    tcc -o $BINARY -I$(dirname "$SOURCE") -O2 \
-            -Wall \
-            -Wno-unused-function \
-            -Wno-unneeded-internal-declaration \
-            $flags \
-            ${PREPROCESSED_SOURCE}.c -ll
-  else
+  # if [ $os == LINUX ] && type -p tcc > /dev/null ; then
+  #   tcc -o $BINARY -I$(dirname "$SOURCE") -O2 \
+  #           -Wall \
+  #           -Wno-unused-function \
+  #           -Wno-unneeded-internal-declaration \
+  #           $flags \
+  #           ${PREPROCESSED_SOURCE}.c -ll
+  # else
     cc -o $BINARY -I$(dirname "$SOURCE") -O2 \
+            -std=c99 \
             -Wall \
+            -D_BSD_SOURCE -D_POSIX_SOURCE \
             -Wno-unused-function \
             -Wno-unneeded-internal-declaration \
             $flags \
             ${PREPROCESSED_SOURCE}.c -ll
-  fi
+  # fi
   )
 }
 
 JIT_EXT=fl
-jit_inc=$(<<<"$0" sed 's-[.][^.]*$-.inc-')
+jit_inc=$(echo "$0" | sed 's-[.][^.]*$-.inc-')
 . "$jit_inc"
