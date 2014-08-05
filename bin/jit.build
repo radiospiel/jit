@@ -1,0 +1,5 @@
+#!/bin/bash
+# jit.build updates and then compiles a specific file, without actually running it.
+export JIT_MODE_BUILD=y
+$1
+
