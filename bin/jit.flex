@@ -12,12 +12,29 @@
 # - JITARCH: the host architecture.
 #
 function build() {
-  flex -o ${PREPROCESSED_SOURCE}.c ${PREPROCESSED_SOURCE} &&
-  cc -o $BINARY -I$(dirname "$SOURCE") -O2 \
-          -Wall \
-          -Wno-unused-function \
-          -Wno-unneeded-internal-declaration \
-          ${PREPROCESSED_SOURCE}.c -ll
+  local os=$(<<<$JITOS tr a-z A-Z)
+  local flags=$(
+    < $SOURCE grep "// JIT_CFLAGS="     | sed "sx// JIT_CFLAGS=xx"
+    < $SOURCE grep "// JIT_CFLAGS_$os=" | sed "sx// JIT_CFLAGS_$os=xx"
+  )
+
+  flex -o ${PREPROCESSED_SOURCE}.c ${PREPROCESSED_SOURCE} && (
+  if [ $os == LINUX ] && type -p tcc > /dev/null ; then
+    tcc -o $BINARY -I$(dirname "$SOURCE") -O2 \
+            -Wall \
+            -Wno-unused-function \
+            -Wno-unneeded-internal-declaration \
+            $flags \
+            ${PREPROCESSED_SOURCE}.c -ll
+  else
+    cc -o $BINARY -I$(dirname "$SOURCE") -O2 \
+            -Wall \
+            -Wno-unused-function \
+            -Wno-unneeded-internal-declaration \
+            $flags \
+            ${PREPROCESSED_SOURCE}.c -ll
+  fi
+  )
 }
 
 JIT_EXT=fl

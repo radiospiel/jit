@@ -12,7 +12,17 @@
 # - JITARCH: the host architecture.
 #
 function build() {
-  cc -o $BINARY -I$(dirname "$SOURCE") -Wall -x c -O2 $PREPROCESSED_SOURCE
+  local os=$(<<<$JITOS tr a-z A-Z)
+  local flags=$(
+    < $SOURCE grep "// JIT_CFLAGS="     | sed "sx// JIT_CFLAGS=xx"
+    < $SOURCE grep "// JIT_CFLAGS_$os=" | sed "sx// JIT_CFLAGS_$os=xx"
+  )
+
+  if [ $os == LINUX ] && type -p tcc > /dev/null ; then
+    tcc -o $BINARY -I$(dirname "$SOURCE") -Wall -x c -O2 $flags $PREPROCESSED_SOURCE
+  else
+    cc -o $BINARY -I$(dirname "$SOURCE") -Wall -x c -O2 $flags $PREPROCESSED_SOURCE
+  fi
 }
 
 JIT_EXT=c
