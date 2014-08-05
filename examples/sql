@@ -1,5 +1,5 @@
-#!/usr/bin/env jit 
-jit.cc -c99 -Wno-unused-command-line-argument-hard-error-in-future -I. -lsqlite3
+#!/usr/bin/env jit.cc
+// JIT_CFLAGS=-c99 -Wno-unused-command-line-argument-hard-error-in-future -I. -lsqlite3
 
 #include <stdio.h>
 #include <sqlite3.h>

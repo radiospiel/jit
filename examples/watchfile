@@ -1,5 +1,4 @@
-#!/usr/bin/env jit 
-jit.cc
+#!/usr/bin/env jit .cc
 
 /*
  *	watch a file. When a change is found (via mtime) run a specified command.

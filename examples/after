@@ -1,5 +1,4 @@
-#!/usr/bin/env jit
-jit.cc
+#!/usr/bin/env jit.cc
 
 /* Usage: after N.NN cmd .. */
 
