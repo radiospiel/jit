@@ -1,8 +1,13 @@
 #!/bin/bash
 
-HERE=${1:-`pwd`}
+if [ "${1:-}" ]; then
+  HERE=$1
+  shift
+else
+  HERE=.
+fi
 
-jit_files=$(grep -l "/usr/bin/env jit" $(find $HERE -type f -perm +111 -print -size +20000c) 2> /dev/null)
+jit_files=$(grep -l "/usr/bin/env jit" $(find "$HERE" $@ -type f -perm +111 -print -size +20000c) 2> /dev/null)
 for file in $jit_files ; do
   if [[ $(basename $file) != $(basename $BASH_SOURCE) ]]; then
     log=/tmp/$(basename $file).jit.log
