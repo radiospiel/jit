@@ -1,0 +1,16 @@
+#!/bin/bash
+
+HERE=${1:-`pwd`}
+
+jit_files=$(grep -l "/usr/bin/env jit" $(find $HERE -type f -perm +111 -print -size +20000c) 2> /dev/null)
+for file in $jit_files ; do
+  if [[ $(basename $file) != $(basename $BASH_SOURCE) ]]; then
+    log=/tmp/$(basename $file).jit.log
+    if jit.build $file > $log 2>&1 ; then
+      printf "%50s     OK\n" $file
+    else
+      printf "%50s     FAIL (errors in %s)\n" $file $log
+    fi
+  fi
+  
+done
