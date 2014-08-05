@@ -1,0 +1,10 @@
+#!/usr/bin/env jit.cc
+
+// JIT_CFLAGS=-DMESSAGE="Ho" -DEXITCODE=0
+
+#include <stdio.h>
+
+int main() {
+  printf("jit says %s\n", MESSAGE);
+  return EXITCODE;
+}
