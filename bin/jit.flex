@@ -30,7 +30,7 @@ function build() {
     cc -o $BINARY -I$(dirname "$SOURCE") -O2 \
             -std=c99 \
             -Wall \
-            -D_BSD_SOURCE -D_POSIX_SOURCE \
+            -D_BSD_SOURCE \
             -Wno-unused-function \
             -Wno-unneeded-internal-declaration \
             $flags \

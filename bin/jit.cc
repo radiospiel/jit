@@ -21,7 +21,7 @@ function build() {
   # if [ $os == LINUX ] && type -p tcc > /dev/null ; then
   #   tcc -o $BINARY -I$(dirname "$SOURCE") -Wall -x c -O2 $flags $PREPROCESSED_SOURCE
   # else
-    cc -o $BINARY -I$(dirname "$SOURCE") -Wall -x c -std=c99 -D_BSD_SOURCE -D_POSIX_SOURCE -O2 $flags $PREPROCESSED_SOURCE
+    cc -o $BINARY -I$(dirname "$SOURCE") -Wall -x c -std=c99 -D_BSD_SOURCE -O2 $flags $PREPROCESSED_SOURCE
   # fi
 }
 
