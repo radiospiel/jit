@@ -26,5 +26,5 @@ function build() {
 }
 
 JIT_EXT=c
-jit_inc=$(echo "$0" | sed 's-[.][^.]*$-.inc-')
+jit_inc=$(<<<"$0" sed 's-[.][^.]*$-.inc-')
 . "$jit_inc"

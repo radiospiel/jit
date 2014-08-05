@@ -38,5 +38,5 @@ function build() {
 }
 
 JIT_EXT=fl
-jit_inc=$(echo "$0" | sed 's-[.][^.]*$-.inc-')
+jit_inc=$(<<<"$0" sed 's-[.][^.]*$-.inc-')
 . "$jit_inc"

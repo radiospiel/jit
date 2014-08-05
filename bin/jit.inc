@@ -106,10 +106,13 @@ function build_binary() {
   return 0
 }
 
-is_up_to_date "$dist_binary"  && exec -a $SOURCE "$dist_binary" "$@"
+if [[ ${JIT_DIST_SUPPORT:-} == y ]]; then
+  is_up_to_date "$dist_binary" && exec -a $SOURCE "$dist_binary" "$@"
+fi
+
 is_up_to_date "$local_binary" && exec -a $SOURCE "$local_binary" "$@"
 
-if [[ ${JIT_DIST_BUILD:-y} = y ]] ; then
+if [[ ${JIT_DIST_SUPPORT:-} == y ]] && [[ ${JIT_DIST_BUILD:-y} = y ]] ; then
   JIT_DIST_BUILD=y 
   build_binary "$dist_binary"  && exec -a $SOURCE "$dist_binary" "$@"
 fi

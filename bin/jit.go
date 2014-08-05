@@ -56,5 +56,6 @@ function build() {
 }
 
 JIT_EXT=go
-jit_inc=$(echo "$0" | sed 's-[.][^.]*$-.inc-')
+JIT_DIST_SUPPORT=y
+jit_inc=$(<<<"$0" sed 's-[.][^.]*$-.inc-')
 . "$jit_inc"
