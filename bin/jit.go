@@ -22,6 +22,7 @@ function build() {
   )
 
   for package in "$packages" ; do
+    log env GOPATH=$GOPATH go get $package
     go get $package
   done
 
