@@ -12,6 +12,19 @@
 # - JITARCH: the host architecture.
 #
 function build() {
+  # -- prepare go packages if needed.
+  if [ -z "${GOPATH:-}" ]; then
+    GOPATH=$HOME/jit.golang
+  fi
+
+  local packages=$(
+    < $SOURCE grep "// JIT_GO_PACKAGES="     | sed "sx// JIT_GO_PACKAGES=xx"
+  )
+
+  for package in "$packages" ; do
+    go get $package
+  done
+
   if [[ $JIT_DIST_BUILD = y ]]; then
     log "Building for distribution"
     local platforms=${JIT_GO_TARGET_PLATFORMS:-darwin.amd64 linux.amd64 linux.arm linux.386}
@@ -19,14 +32,26 @@ function build() {
     local platforms=$JITOS.$JITARCH
   fi
 
+  local packages=$(
+    < $SOURCE grep "// JIT_GO_PACKAGES="     | sed "sx// JIT_GO_PACKAGES=xx"
+  )
+
+  for package in "$packages" ; do
+    go get $package
+  done
+
+
   local binary_base=$(echo $BINARY | sed 's-[.][^.]*[.][^.]*$--')
 
   local platform
   for platform in $platforms ; do
     local goos=$(cut -d . -f 1 <<<$platform)
     local goarch=$(cut -d . -f 2 <<<$platform)
-    env GOARCH=$goarch GOOS=$goos go build -ldflags "-s" -o $binary_base.$goos.$goarch $PREPROCESSED_SOURCE
-    log Built $binary_base.$goarch.$goos
+	if ! env GOARCH=$goarch GOOS=$goos go build -ldflags "-s" -o $binary_base.$goos.$goarch $PREPROCESSED_SOURCE ; then
+		exit 1
+	fi
+
+	log Built $binary_base.$goos.$goarch
   done
 }
 
