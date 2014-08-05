@@ -14,7 +14,7 @@
 function build() {
   # -- prepare go packages if needed.
   if [ -z "${GOPATH:-}" ]; then
-    GOPATH=$HOME/jit.golang
+    export GOPATH=$HOME/jit.golang
   fi
 
   local packages=$(
