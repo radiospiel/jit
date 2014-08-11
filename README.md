@@ -21,6 +21,7 @@ Current drivers include:
 - **jit.cc**: to compile a C source file using cc(1)
 - **jit.flex**: to compile a file via flex(1) and cc(1)
 - **jit.go**: to compile a go source file via go(1)
+- **jit.mrb**: to compile a mruby source file via mrb(1)
 
 jit.LANG assumes the tools needed by a specific strategy - for example flex(1) and 
 cc(1) - are installed on the target system.
@@ -60,6 +61,43 @@ or
     
 installs all jit scripts into `/usr/local`.
 
+## INSTALLATION OF DEPENDENCIES
+
+Unsurprisingly, compilation drivers have an additional set of dependencies, namely compilers
+and, potentially, a run time environment. The following lists the commands required for 
+a specific mode:
+
+- **jit.cc**: `cc`,
+- **jit.flex**: `cc`, `flex`,
+- **jit.go**: `go` + friends, `git` for some packages,
+- **jit.mrb**: `mrbc`, `cc` from mruby.
+
+## LANGUAGE SPECIFIC FLAGS
+
+Drivers can controlled via some settings embedded in the source code. 
+
+### C, flex: set compile settings
+
+The following example is the head of the `sql` example, which needs sqlite development libraries installed and
+linked:
+
+    #!/usr/bin/env jit.cc
+    // JIT_CFLAGS=-Wno-unused-command-line-argument-hard-error-in-future -I. -lsqlite3
+
+    #include <stdio.h>
+    #include <sqlite3.h>
+    ...
+
+It is possible to use platform specific flags also, via
+
+    // JIT_CFLAGS_LINUX=...
+
+### Go: install packages
+
+One can use JIT_GO_PACKAGES to request go to install one or more packages:
+
+    // JIT_GO_PACKAGES=github.com/mxk/go-imap/imap
+
 ## COMPILING BINARIES FOR DISTRIBUTION
 
 jit can build binaries for distribution. These binaries are installed close to the source script,
@@ -78,8 +116,8 @@ To prevent distribution builds you either
 
 ## ENVIRONMENT VALUES
 
-- JIT_DIST_BUILD: set to "n" to prevent distribution builds.
-- JIT_GO_TARGET_PLATFORMS: target platforms for go cross compilation.
+- JIT_GO_TARGET_PLATFORMS: target platforms for go cross compilation; defaults to
+  `darwin.amd64 linux.amd64 linux.arm linux.386`
 
 ## LIMITATIONS
 
