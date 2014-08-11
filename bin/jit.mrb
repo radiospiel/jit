@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# The "build" function below will later build a binary from a preprocessed
+# source file. When "build" is called, these variables are set:
+#
+# - SOURCE:  the full path of the source file.
+# - PREPROCESSED_SOURCE: the full path of the preprocessed source file,
+#            i.e. without the leading #! line
+# - BINARY:  the full path of the binary. The build function must generate
+#            this file.
+# - JITOS:   the host operating system
+# - JITARCH: the host architecture.
+#
+function build() {
+  local os=$(<<<$JITOS tr a-z A-Z)
+
+  mrbc -o $PREPROCESSED_SOURCE.c  -Bjit_mrb $PREPROCESSED_SOURCE
+  cat >> $PREPROCESSED_SOURCE.c <<-SRC
+    #include "mruby.h"
+    #include "mruby/irep.h"
+    #include "mruby/proc.h"
+
+    int
+    main(void)
+    {
+      /* new interpreter instance */
+      mrb_state *mrb;
+      mrb = mrb_open();
+
+      /* read and execute compiled symbols */
+      mrb_load_irep(mrb, jit_mrb);
+
+      mrb_close(mrb);
+      return 0;
+    }
+SRC
+
+  gcc $PREPROCESSED_SOURCE.c -o $BINARY -lmruby
+}
+
+JIT_EXT=mrb
+jit_inc=$(echo "$0" | sed 's-[.][^.]*$-.inc-')
+. "$jit_inc"

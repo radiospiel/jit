@@ -1,0 +1,2 @@
+#!/usr/bin/env jit.mrb
+puts "Hello jitted world!"
