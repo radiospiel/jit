@@ -1,0 +1,215 @@
+#!/usr/bin/env jit.go
+// JIT_GO_PACKAGES=github.com/mxk/go-imap/imap
+
+/*
+ * mailtest checks logins via smtp/s or imap/s servers.
+ */
+package main;
+
+import "github.com/mxk/go-imap/imap"
+import "os"
+import "fmt"
+import "net"
+import 	"net/smtp"
+import 	"crypto/tls"
+
+/* --- helpers ------------------------------------------------------------- */
+
+func Print(msg string) {
+	fmt.Fprintf(os.Stdout, "%s\n", msg)
+}
+var _ = Print
+
+func Log(msg string) {
+	fmt.Fprintf(os.Stderr, "%s\n", msg)
+}
+var _ = Log
+
+func Assert(condition bool, msg string) {
+	if condition {
+		return
+	}
+		
+	Die("Assertion failed: " + msg)
+}
+var _ = Assert
+
+func Die(msg string) {
+	fmt.Fprintf(os.Stderr, "%s\n", msg)
+	os.Exit(1)
+}
+
+var _ = Die
+
+func Check(err error) {
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+func TlsConfig(hostport string) *tls.Config {
+	host, _, err := net.SplitHostPort(hostport)
+	Check(err)
+	
+	return &tls.Config {
+		InsecureSkipVerify: true, // FIXME!!
+		ServerName: host,
+	}
+}
+
+/* --- connect to smtp(s) servers ------------------------------------------ */
+
+func SmtpClient(hostport string) *smtp.Client {
+	Log(hostport + ": connecting");
+
+	client, err := smtp.Dial(hostport)
+	Check(err)
+
+	//
+	// defer client.Close()
+	err = client.Hello("localhost")
+	Check(err)
+	//
+	
+	ok, _ := client.Extension("STARTTLS")
+	if ! ok {
+		Die("Server does not provide STARTTLS")
+	}
+	
+	err = client.StartTLS(TlsConfig(hostport))
+	Check(err)
+	Log(hostport + ": upgraded to TLS");
+
+	return client
+}
+
+func SmtpsClient(hostport string) *smtp.Client {
+	host, _, err := net.SplitHostPort(hostport)
+	Check(err)
+
+	Log(hostport + ": connecting via SSL");
+
+	// TLS config
+	connection, err := tls.Dial("tcp", hostport, TlsConfig(hostport))
+	Check(err)
+
+	client, err := smtp.NewClient(connection, host)
+	Check(err)
+
+	// defer client.Close()
+	err = client.Hello("localhost")
+	Check(err)
+
+	return client
+}
+//
+
+func CheckSmtpLogin(mode string, hostport string, username string, password string) bool {
+	Log("Test '" + mode + "' connection to '" + hostport + "' for '" + username + "'")
+	Assert(mode == "smtp" || mode == "smtps", "mode == smtp || mode == smtps")
+
+	var client *smtp.Client
+	if mode == "smtp" {
+		client = SmtpClient(hostport)
+	} else {
+		client = SmtpsClient(hostport)
+	}
+
+	Log(hostport + ": connected, trying to authenticate '" + username + "'");
+
+	host, _, err := net.SplitHostPort(hostport)
+	Check(err)
+
+	auth := smtp.PlainAuth("", username, password, host);
+	err = client.Auth(auth)
+	Check(err)
+
+	Print(hostport + ": authenticated '" + username + "'");
+	return client != nil;
+}
+
+/* --- connect to imap(s) servers ------------------------------------------ */
+
+func CheckImapLogin(mode string, hostport string, username string, password string) {
+	Log("Test '" + mode + "' connection to '" + hostport + "' for '" + username + "'")
+	Assert(mode == "imap" || mode == "imaps", "mode == imap || mode == imaps")
+
+	// Connect to the server
+	var client *imap.Client
+	var err error
+	
+	switch mode {
+	case "imap":
+		Log(hostport + ": connecting");
+		client, err = imap.Dial(hostport)
+	case "imaps":
+		Log(hostport + ": connecting via SSL");
+		client, err = imap.DialTLS(hostport, TlsConfig(hostport))
+	}
+
+	Check(err)
+	
+	// Print server greeting.
+	Log(hostport + ": " + client.Data[0].Info)
+	client.Data = nil
+
+	// Enable encryption
+	if mode == "imap" {
+		if ! client.Caps["STARTTLS"] {
+			Die(hostport + ": no STARTTLS support.")
+		}
+		_, err = client.StartTLS(TlsConfig(hostport))
+		Check(err);
+		Log(hostport + ": upgraded to TLS");
+	} 
+
+	// Authenticate
+	if client.State() != imap.Login {
+		Die(hostport + ": Cannot LOGIN")
+	}	
+	
+	_, err = client.Login(username, password)
+	Check(err);
+	
+	Print(hostport + ": authenticated '" + username + "'");
+}
+
+/* --- main --------------------------------------------------------------- */
+
+func Usage() {
+	Die(`Usage:
+	
+	env PASSWORD=password mailtest {smtp,smtps,imap,imaps} server:port username
+	                      mailtest {smtp,smtps,imap,imaps} server:port username password`)
+}
+
+func main() {
+	if len(os.Args) < 4 {
+		Usage();
+	}
+
+	protocol := os.Args[1]
+	hostport := os.Args[2]
+	username := os.Args[3]
+	password := os.Getenv("PASSWORD")
+	if password == "" && len(os.Args) >= 5 {
+		password = os.Args[4]
+	}
+	
+	if protocol == "" || hostport == "" || username == "" {
+		Usage();
+	}
+	if password == "" {
+		Log("Missing password")
+		Usage();
+	}
+	switch {
+	case protocol == "smtp" || protocol == "smtps":
+		CheckSmtpLogin(protocol, hostport, username, password);
+	case protocol == "imap" || protocol == "imaps":
+		CheckImapLogin(protocol, hostport, username, password);
+	default:
+		Usage();
+	}
+}
