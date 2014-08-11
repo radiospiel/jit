@@ -97,7 +97,7 @@ function build_binary() {
   trap cleanup_temp_files EXIT
 
   PREPROCESSED_SOURCE="$JIT_TMPDIR/$source_basename.$JIT_EXT"
-  cat ${SOURCE} | sed -e '1,2d' > $PREPROCESSED_SOURCE
+  cat ${SOURCE} | sed -e '1,1d' > $PREPROCESSED_SOURCE
   if ! build ; then
     exit 1
   fi
