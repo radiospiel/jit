@@ -42,25 +42,44 @@ shift
 if [ "${JITOS:-}" ]; then
   :
 elif [ "${GOHOSTARCH:-}" ]; then
-  GOHOSTARCH="amd64"
-  GOHOSTOS="darwin"
-
   JITOS=$GOHOSTOS
   JITARCH=$GOHOSTARCH
 else
-  JITOS=$(uname -s | tr A-Z a-z)
-
-  case $(uname -m) in
-    x86_64) JITARCH=amd64 ;;
+  UNAME=$(uname -a | tr A-Z a-z)
+  JITOS=${UNAME/ */}
+  case $UNAME in
+    *x86_64*) JITARCH=amd64 ;;
   esac
 fi
 
 # -- determine paths ----------------------------------------------------------
 
+function basename()
+{
+  local name="${1##*/}"
+  echo "${name}"
+}
+
+function dirname()
+{
+  local dir="${1%${1##*/}}"
+  echo "$dir"
+}
+
+function realname()
+{
+  local path=$1
+
+  (
+    cd "$(dirname $path)"
+    echo "$PWD/$(basename $path)"
+  )
+}
+
 strategy=$(basename $0)
 source_basename="$(basename "$SOURCE")"
 # Get the full path to the SOURCE.
-FULL_SOURCE=$(cd "$(dirname "$SOURCE")" && pwd)/"$source_basename"
+FULL_SOURCE=$(realname $SOURCE)
 
 # Get the path relative to the HOME directory.
 RELATIVE_SOURCE="${FULL_SOURCE#$HOME}"
