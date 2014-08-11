@@ -129,24 +129,34 @@ function build_mode() {
   return 1
 }
 
+#
+# Build mode? Build the final binary and exit.
+
 if [[ "${JIT_MODE_BUILD:-}" = y ]]; then
-  JIT_DIST_BUILD=n
+  JIT_DIST_BUILD=y 
+
   if build_binary "$local_binary" ; then
-    echo Build $dist_binary
+    echo Built $dist_binary
     exit
   fi
 
   exit 1
 fi
 
-is_up_to_date "$dist_binary"  && exec -a $SOURCE "$dist_binary" "$@"
+# Execution mode? exec straight away if rebuilding is not need.
 is_up_to_date "$local_binary" && exec -a $SOURCE "$local_binary" "$@"
 
-if [[ ${JIT_DIST_BUILD:-y} = y ]] ; then
-  JIT_DIST_BUILD=y 
-  build_binary "$dist_binary"  && exec -a $SOURCE "$dist_binary" "$@"
+# Check for distribution builds: distribution builds are potentially cross-
+# compiled, and are built only in JIT_MODE_BUILD. A distribution build, 
+# however, might exist and be up-to-date (i.e. when this machine was a 
+# target for a distribution). We copy it into the $local_binary position, 
+# so on the next run the local_binary will be used.
+if is_up_to_date "$dist_binary" ; then
+  cp "$dist_binary" "$local_binary"
+  exec -a $SOURCE "$local_binary" "$@"
 fi
 
+# build a non-distribution build.
 JIT_DIST_BUILD=n
-build_binary "$local_binary" && exec -a $SOURCE "$local_binary" "$@"
-$SOURCE "$local_binary" "$@"
+build_binary "$local_binary"
+exec -a $SOURCE "$local_binary" "$@"
