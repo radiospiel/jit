@@ -1,0 +1,3 @@
+#!/usr/bin/env jit.mrb
+exit_code = ARGV.first.to_i
+exit_code

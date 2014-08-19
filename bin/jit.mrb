@@ -42,11 +42,16 @@ function build() {
       }
       mrb_define_global_const(mrb, "ARGV", ARGV);
 
-      /* read and execute compiled symbols */
-      mrb_load_irep(mrb, jit_mrb);
-
+      /* extract exitcode */
+      mrb_value retcode = mrb_load_irep(mrb, jit_mrb);
+      int exitcode = 0;
+      
+      switch(mrb_type(retcode)) {
+        case MRB_TT_FIXNUM: exitcode = retcode.value.i; break;
+        default:            ;
+      }
       mrb_close(mrb);
-      return 0;
+      return retcode.value.i & 0xff;
     }
 SRC
 
