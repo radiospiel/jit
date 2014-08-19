@@ -1,0 +1,7 @@
+#!/usr/bin/env jit.mrb
+def basename(path)
+  return path unless dot = path.rindex("/")
+  path[dot+1 .. -1]
+end
+
+puts "#{basename($0)}:#{ARGV.join(" ")}"

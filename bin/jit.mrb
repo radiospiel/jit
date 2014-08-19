@@ -19,13 +19,28 @@ function build() {
     #include "mruby.h"
     #include "mruby/irep.h"
     #include "mruby/proc.h"
+    #include "mruby/variable.h"
+    #include "mruby/string.h"
+    #include "mruby/array.h"
 
     int
-    main(void)
+    main(int argc, char** argv)
     {
       /* new interpreter instance */
       mrb_state *mrb;
       mrb = mrb_open();
+
+      /* set \$0 */
+      mrb_sym zero_sym = mrb_intern_lit(mrb, "\$0");
+      mrb_gv_set(mrb, zero_sym, mrb_str_new_cstr(mrb, *argv));
+      ++argv; --argc;
+
+      /* set ARGV */
+      mrb_value ARGV = mrb_ary_new_capa(mrb, argc);
+      while(*argv) {
+          mrb_ary_push(mrb, ARGV, mrb_str_new_cstr(mrb, *argv++));
+      }
+      mrb_define_global_const(mrb, "ARGV", ARGV);
 
       /* read and execute compiled symbols */
       mrb_load_irep(mrb, jit_mrb);
