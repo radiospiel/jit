@@ -21,10 +21,11 @@ function build() {
     < $SOURCE grep "// JIT_GO_PACKAGES="     | sed "sx// JIT_GO_PACKAGES=xx"
   )
 
+  if [ "$packages" ]; then
   for package in "$packages" ; do
-    log env GOPATH=$GOPATH go get $package
     go get $package
   done
+  fi
 
   if [[ $JIT_DIST_BUILD = y ]]; then
     log "Building for distribution"
@@ -33,22 +34,15 @@ function build() {
     local platforms=$JITOS.$JITARCH
   fi
 
-  local packages=$(
-    < $SOURCE grep "// JIT_GO_PACKAGES="     | sed "sx// JIT_GO_PACKAGES=xx"
-  )
-
-  for package in "$packages" ; do
-    go get $package
-  done
-
-
   local binary_base=$(echo $BINARY | sed 's-[.][^.]*[.][^.]*$--')
 
   local platform
   for platform in $platforms ; do
     local goos=$(cut -d . -f 1 <<<$platform)
     local goarch=$(cut -d . -f 2 <<<$platform)
-	if ! env GOARCH=$goarch GOOS=$goos go build -ldflags "-s" -o $binary_base.$goos.$goarch $PREPROCESSED_SOURCE ; then
+    echo "===== cat $PREPROCESSED_SOURCE"
+	
+	if ! env GOARCH=$goarch GOOS=$goos go build -o $binary_base.$goos.$goarch $PREPROCESSED_SOURCE ; then
 		exit 1
 	fi
 
@@ -57,6 +51,5 @@ function build() {
 }
 
 JIT_EXT=go
-JIT_DIST_SUPPORT=y
-jit_inc=$(<<<"$0" sed 's-[.][^.]*$-.inc-')
+jit_inc=$(echo "$0" | sed 's-[.][^.]*$-.inc-')
 . "$jit_inc"
