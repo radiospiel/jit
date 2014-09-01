@@ -40,7 +40,6 @@ function build() {
   for platform in $platforms ; do
     local goos=$(cut -d . -f 1 <<<$platform)
     local goarch=$(cut -d . -f 2 <<<$platform)
-    echo "===== cat $PREPROCESSED_SOURCE"
 	
 	if ! env GOARCH=$goarch GOOS=$goos go build -o $binary_base.$goos.$goarch $PREPROCESSED_SOURCE ; then
 		exit 1
