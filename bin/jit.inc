@@ -97,6 +97,20 @@ function is_up_to_date() {
   [ -x "$1" ] && ! [ "$FULL_SOURCE" -nt "$1" ]
 }
 
+export INTERMEDIATE=
+
+function unscript() {
+  local m="$JIT_TMPDIR/$source_basename.unscript"
+  < ${INTERMEDIATE} sed -e '1,1s-.*--' > $m
+  INTERMEDIATE=$m
+}
+
+function preprocess() {
+  local m="$JIT_TMPDIR/$source_basename.preprocess"
+  cpp "-D__SOURCE__=\"$(basename $SOURCE)\"" $INTERMEDIATE | grep -E -v '^# ' > $m
+  INTERMEDIATE=$m
+}
+
 function build_binary() {
   BINARY=$1
   if ! [ -x "$(dirname $BINARY)" ]; then
@@ -115,8 +129,18 @@ function build_binary() {
   }
   trap cleanup_temp_files EXIT
 
+  # process SOURCE file
+  export INTERMEDIATE=$SOURCE
+
+  unscript
+
+  if grep -w 'JIT_ENABLE_CPP' $INTERMEDIATE > /dev/null ; then
+    preprocess
+  fi
+
   PREPROCESSED_SOURCE="$JIT_TMPDIR/$source_basename.$JIT_EXT"
-  cat ${SOURCE} | sed -e '1,1d' > $PREPROCESSED_SOURCE
+  mv $INTERMEDIATE $PREPROCESSED_SOURCE
+
   if ! build ; then
     exit 1
   fi
