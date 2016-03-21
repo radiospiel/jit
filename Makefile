@@ -11,5 +11,5 @@ doc:
 
 install:
 	# Remove first jit version
-	test /usr/local/bin/jit && rm /usr/local/bin/jit
+	rm -f /usr/local/bin/jit
 	install bin/jit.* /usr/local/bin
